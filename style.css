@@ -6,6 +6,16 @@
   transition: all 0.2s ease;
 }
 
+html, body{
+  height: 100%;
+  padding-bottom: 5px;
+}
+
+.hidden{
+  display: none !important;
+}
+
+
 body {
   font-family: 'Inter', sans-serif;
   background-color: #f9f9f9;
@@ -47,12 +57,137 @@ body.dark-mode #amigo:hover {
   background-color: #2a2a2a;
 }
 
+body.dark-mode .chat-item {
+  background-color: #1a1a1a;
+  border-bottom: 1px solid #444;
+}
+
+body.dark-mode .chat-messages{
+  background-color: #121212;
+}
+
+
+body.dark-mode .message.sent {
+  background-color: #2b4b5b;
+  color: #fff;
+}
+
+body.dark-mode .message.received {
+  background-color: #333;
+  color: #fff;
+}
+
+body.dark-mode .chat-input {
+  background-color: #2a2a2a;
+  border-color: #444;
+}
+
+body.dark-mode .chat-input input {
+  background-color: #2a2a2a;
+  color: #fff;
+}
+
+body.dark-mode .chat-input button {
+  background-color: none;
+}
+
+body.dark-mode .chat-item:hover {
+  background-color: #2a2a2a;
+}
+
+body.dark-mode #chat-page {
+  background-color: #121212;
+  color: white;
+}
+
+body.dark-mode #chat-header {
+  background-color: #121212;
+  color: white;
+}
+
+#main{
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  width: 100%;
+  overflow: hidden;
+}
+
+#chat-container{
+  width: 40%;
+  /* border-right: 0.2px solid grey;
+  border-left: 0.2px solid grey; */
+}
+
+/* 1. When the hidden checkbox gets focus, remove outline/shadow from its slider */
+.toggle-switch input:focus + .slider {
+  outline: none;
+  box-shadow: none;
+}
+
+/* 2. Kill the tap-highlight flash and disable text-selection on both the checkbox and the slider */
+.toggle-switch input,
+.toggle-switch .slider {
+  -webkit-tap-highlight-color: transparent; /* remove mobile flash */
+  touch-action: manipulation;               /* faster, no double-tap delays */
+  user-select: none;                        /* no accidental text-selection artifacts */
+}
+
+
+
+/* SEND BUTTON (with img inside) */
+
+.chat-input button,
+.chat-input button:focus {
+  outline: none;                            /* remove focus ring */
+  -webkit-tap-highlight-color: transparent; /* remove mobile flash */
+  touch-action: manipulation;               /* faster, no double-tap delays */
+  background: none;                         /* if you ever get default bg on focus */
+}
+
+/* Remove Firefox’s inner focus border on buttons */
+.chat-input button::-moz-focus-inner {
+  border: 0;
+}
+
+@media screen and (min-width: 769px) {
+  #chat-page {
+    width: 60%;
+  }
+
+  #chat-container {
+    width: 40%;
+  }
+}
+
+
+@media screen and (max-width: 768px) {
+  #main{
+    flex-direction: column;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  #chat-container,#chat-page{
+    width: 100%;
+    height: 100vh;
+    flex: 1 1 auto;
+  }
+
+  #chat-container.hidden, #chat-page.hidden{
+    display: none;
+  }
+}
 
 /* Layout Container */
 .main-container {
   max-width: 600px;
   margin: 20px auto;
   padding: 15px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Header */
@@ -141,6 +276,8 @@ body.dark-mode #amigo:hover {
   .main-container {
     padding: 10px;
     margin: 10px;
+    height: 100%;
+    overflow: none;
   }
 
   #header h2 {
@@ -198,4 +335,135 @@ body.dark-mode #amigo:hover {
 .toggle-switch input:checked + .slider::before{
     transform: translate(24px);
     background-color: #333;
+}
+
+
+/* ---------chat area styling-------------- */
+
+#chat-page{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#chat-header{
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  background: #f5f5f5;
+  border-bottom: 1px solid #ddd;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+#chat-header, .chat-input{
+  flex: none;
+}
+
+#back-btn {
+  border: #333;
+  padding: 3px;
+  border-radius: 10px;
+  width: 60px;
+  font-size: medium;
+  cursor: pointer;
+}
+
+#back-btn:hover{
+  width: 50px;
+  transition: 0.2s ease-in-out;
+}
+
+.chat-profile{
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.chat-username{
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.chat-messages{
+  flex:1 1 0;
+  padding: 15px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #f5f5f5;
+  min-height: 0;
+  scrollbar-width: none;       /* Firefox */
+  -ms-overflow-style: none;    /* IE and Edge*/
+}
+
+.chat-messages::-webkit-scrollbar {
+  display: none;               /* Chrome, Safari, Opera */
+}
+
+.message{
+  max-width: 70%;
+  padding: 10px 15px;
+  border-radius: 18px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.message.sent{
+  align-self: flex-end;
+  background-color: #daf1ff;
+}
+
+.message.received{
+  align-items: flex-start;
+  background-color: #e8e8e8;
+}
+
+.chat-input {
+  flex: none;
+  display: flex;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  padding: 0px 10px;
+  display: flex;
+  align-items: center;
+  margin-top: auto; /* optional spacing */
+  position: sticky;
+  bottom: 5px;
+  background-color: #f5f5f5;
+}
+
+.chat-input input{
+  flex:1;
+  padding: 10px;
+  border: none;
+  outline: none;
+  background-color: #f5f5f5;
+  height: 20px;
+}
+
+.chat-input button{
+  margin-left: 10px;
+  padding: 10px 16px;
+  background-color: none;
+  border: none;
+  cursor: pointer;
+  margin-right: 0px;
+  border-radius: 10px;
+}
+
+#paper-plane{
+  height: 20px;
+}
+
+.chat-input button:active{
+  transform: translateX(10px);
+}
+
+#cameraQuery{
+  cursor: pointer;
 }
