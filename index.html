@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sanchat</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="main-container">
+    <header id="header">
+      <h2>Sanchat</h2>
+      <img src="assets/heart-chat.svg" alt="Heart Chat Icon" id="icon" />
+      <section><h4 id="timeDisplay"></h4></section>
+
+    <label class="toggle-switch">
+        <input type="checkbox" id="darkModeToggle">
+        <span class="slider"></span>
+    </label>
+
+    </header>
+
+    <section id="searchBox">
+      <img src="assets/search.svg" alt="Search Icon" />
+      <input type="text" placeholder="Search" aria-label="Search chat" />
+    </section>
+
+    <main id="chat-container">
+      <div class="chat-item">
+        <img class="profile-image" src="assets/profile.svg" alt="Su's Profile Picture" />
+        <p class="usernames">Su •</p>
+      </div>
+      
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
