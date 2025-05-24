@@ -48,6 +48,7 @@ document.getElementById('amigo').addEventListener('click', () => {
   document.getElementById('chat-page').classList.remove('hidden');
   document.getElementById('header').classList.add('hidden');
   document.getElementById('searchBox').classList.add('hidden');
+  document.getElementById('developer-flex').classList.add('hidden');
 
   // scroll once when opening the chat
   scrollChatToBottom();
@@ -58,6 +59,7 @@ document.getElementById('back-btn').addEventListener('click', () => {
   document.getElementById('chat-page').classList.add('hidden');
   document.getElementById('header').classList.remove('hidden');
   document.getElementById('searchBox').classList.remove('hidden');
+  document.getElementById('developer-flex').classList.remove('hidden');
 });
 
 // Input & keyboard UX
@@ -76,3 +78,12 @@ window.addEventListener('resize', () => {
 
 // Scroll on initial page load too
 window.addEventListener('load', scrollChatToBottom);
+
+const popup = document.getElementById('roomForm');
+document.getElementById('temp-chat').addEventListener('click', () => {
+    popup.classList.add('visible');
+});
+
+document.getElementById('cancel').addEventListener('click', () => {
+    popup.classList.remove('visible');
+});

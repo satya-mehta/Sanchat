@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sanchat</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=photo_camera" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=bubble_chart" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -23,15 +23,32 @@
 
     </header>
 
+    <div class="dev-rotator" id="developer-flex">
+      <span class="dev-static">Developed&nbsp;</span>
+        <div class="dev-dynamic">
+          <span>by Satyam</span>
+          <span>with passion</span>
+          <span>for you ♡</span>
+          <span>by Satyam</span>
+        </div>
+    </div>
 
     <section id="searchBox">
       <img src="assets/search.svg" alt="Search Icon" />
       <input type="text" placeholder="Search" aria-label="Search chat" />
     </section>
 
+    <div class="popup" id="roomForm">
+      <button id="cancel">X</button>
+      This is a query raised to create a new room
+    </div>
+
     <div id="main">
       <main id="chat-container">
-        
+        <div class="temporary-chat chat-item" id="temp-chat">
+          <span class="material-symbols-outlined">bubble_chart</span>
+          <h3 style="margin-left: 20px;">Create Temporary Chat Room</h3>
+        </div>
         <div class="chat-item" id="amigo">
           <img class="profile-image" src="assets/profile.svg" alt="Su's Profile Picture" />
           <p class="usernames">Su •</p>
@@ -65,7 +82,7 @@
         </div>
 
         <div class="chat-input">
-          <span class="material-symbols-outlined" id="cameraQuery">photo_camera</span>
+          <img src="assets/camera.svg" alt="send" id="cameraQuery">
           <input type="text" placeholder="Type your hey/hello.." id="messageInput">
           <button id="sendBtn"><img src="assets/paper-plane.png" alt="send" id="paper-plane"></button>
         </div>

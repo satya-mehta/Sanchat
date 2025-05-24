@@ -105,6 +105,10 @@ body.dark-mode #chat-header {
   color: white;
 }
 
+body.dark-mode .temporary-chat{
+  background-color: #1a1a1a;
+}
+
 #main{
   display: flex;
   flex-direction: row;
@@ -199,7 +203,7 @@ body.dark-mode #chat-header {
   padding: 10px 20px;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 #header h2 {
@@ -215,6 +219,7 @@ body.dark-mode #chat-header {
   height: 40px;
 }
 
+
 /* Search Box */
 #searchBox {
   display: flex;
@@ -223,7 +228,12 @@ body.dark-mode #chat-header {
   padding: 10px 15px;
   border-radius: 10px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  margin-bottom: 20px;
+  margin-bottom: 1px;
+}
+
+.temporary-chat{
+  height: 50px;
+  border-radius: 12px 12px 0 0;
 }
 
 #searchBox img {
@@ -244,7 +254,7 @@ body.dark-mode #chat-header {
   background-color: #ffffff;
   border-radius: 10px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-  padding: 10px 0;
+  padding: 5 0;
 }
 
 /* Individual Chat Entry */
@@ -255,6 +265,7 @@ body.dark-mode #chat-header {
   border-bottom: 1px solid #eee;
   cursor: pointer;
 }
+
 
 .chat-item:hover {
   background-color: #f0f0f0;
@@ -466,4 +477,81 @@ body.dark-mode #chat-header {
 
 #cameraQuery{
   cursor: pointer;
+}
+
+/* -----Developer animation----- */
+
+.dev-rotator {
+  font-size: 1rem;
+  font-weight: bold;
+  display: inline-flex;
+  align-items: flex-start;
+  overflow: hidden;
+  height: 1.2em;           /* one line high */
+  justify-content: center;
+  color: rgba(128, 128, 128, 0.5);
+}
+
+.dev-static {
+  white-space: nowrap;
+}
+
+.dev-dynamic {
+  display: inline-block;
+  line-height: 1.2em;
+  animation: devScroll 8s linear infinite;
+}
+
+.dev-dynamic span {
+  display: block;
+}
+
+@keyframes devScroll {
+  /* 0–30%: hold “by Satyam” */
+  0%, 30%       { transform: translateY(0); }
+
+  /* 30–34%: scroll up to “with passion” */
+  34%           { transform: translateY(-1.2em); }
+
+  /* 34–56%: hold “with passion” */
+  56%           { transform: translateY(-1.2em); }
+
+  /* 56–60%: scroll up to “for you” */
+  60%           { transform: translateY(-2.4em); }
+
+  /* 60–82%: hold “for you” */
+  82%           { transform: translateY(-2.4em); }
+
+  /* 82–86%: scroll up to duplicate “by Satyam” */
+  86%           { transform: translateY(-3.6em); }
+
+  /* 86–100%: hold that duplicate so when it snaps back to 0 it’s seamless */
+  100%          { transform: translateY(-3.6em); }
+}
+
+/* ----------------------------POPUP STYLING-------------------------*/
+
+.popup{
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  padding: 10px;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  background: white;
+  color: #1a1a1a;
+  border-radius: 8px;
+  box-shadow: 0px 2px 8px rgba(0,0,0,0.05);
+  display: none;
+}
+
+.popup.visible{
+  display: block;
+}
+
+#cancel{
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 1.2rem;
 }
