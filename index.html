@@ -4,8 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sanchat</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+  
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=WDXL+Lubrifont+TC&display=swap');
+</style>
+
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=bubble_chart" />
+  <link rel="stylesheet" href="loginStyle.css">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -22,6 +27,56 @@
     </label>
 
     </header>
+    <!------------------------Login Signup card form------------------------>
+  <div class="blur"></div>
+  <section class="forms-section">
+    <h1 class="section-title">Welcome back</h1>
+    <h4 id="new-user-msg" class="subtext-style">New to us ? Signup instead</h4>
+    <div class="forms">
+      <div class="form-wrapper is-active">
+        <button type="button" class="switcher switcher-login">
+          Login
+          <span class="underline"></span>
+        </button>
+        <form class="form form-login">
+          <fieldset>
+            <legend>Please, enter your Username and password for login.</legend>
+            <div class="input-block">
+              <label for="login-username">Username</label>
+              <input id="login-username" type="text" class="no-dark" required>
+            </div>
+            <div class="input-block">
+              <label for="login-password">Password</label>
+              <input id="login-password" type="password" class="no-dark" required>
+            </div>
+          </fieldset>
+          <button type="submit" class="btn-login">Login</button>
+        </form>
+      </div>
+      <div class="form-wrapper">
+        <button type="button" class="switcher switcher-signup">
+          Sign Up
+          <span class="underline"></span>
+        </button>
+        <form class="form form-signup">
+          <fieldset>
+            <legend>Please, enter your username, password and password confirmation for sign up.</legend>
+            <div class="input-block">
+              <label for="signup-username">Username</label>
+              <input id="signup-username" type="text" class="no-dark" required>
+            </div>
+            <div class="input-block">
+              <label for="signup-password">Password</label>
+              <input id="signup-password" type="password" class="no-dark" required>
+            </div>
+          </fieldset>
+          <button type="submit" class="btn-signup">Sign Up</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+    <!---Dev rotator text animation--->
 
     <div class="dev-rotator" id="developer-flex">
       <span class="dev-static">Developed&nbsp;</span>
