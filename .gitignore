@@ -1,0 +1,15 @@
+# Ignore environment config
+.env
+
+# Node dependencies
+node_modules/
+
+# OS-specific junk
+.DS_Store
+Thumbs.db
+
+# Logs and debug files
+*.log
+
+# VS Code workspace settings (optional)
+.vscode/
