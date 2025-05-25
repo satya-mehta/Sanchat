@@ -118,7 +118,7 @@ body.dark-mode .temporary-chat{
 }
 
 #chat-container{
-  width: 40%;
+  width: 100%;
   /* border-right: 0.2px solid grey;
   border-left: 0.2px solid grey; */
 }
@@ -155,13 +155,13 @@ body.dark-mode .temporary-chat{
 }
 
 @media screen and (min-width: 769px) {
-  #chat-page {
+  /* #chat-page {
     width: 60%;
   }
 
   #chat-container {
     width: 40%;
-  }
+  } */
 }
 
 
@@ -234,6 +234,14 @@ body.dark-mode .temporary-chat{
 .temporary-chat{
   height: 50px;
   border-radius: 12px 12px 0 0;
+}
+
+#no-friend{
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #575656;
 }
 
 #searchBox img {
@@ -531,27 +539,150 @@ body.dark-mode .temporary-chat{
 
 /* ----------------------------POPUP STYLING-------------------------*/
 
-.popup{
+.popup {
+  display: none; /* Hidden by default */
+  border: 1px solid #ccc;
+  padding: 20px;
+  width: 300px;
+  background: #fff;
   position: fixed;
   top: 50%;
   left: 50%;
-  padding: 10px;
   transform: translate(-50%, -50%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
   z-index: 1000;
-  background: white;
-  color: #1a1a1a;
-  border-radius: 8px;
-  box-shadow: 0px 2px 8px rgba(0,0,0,0.05);
+  font-family: Arial, sans-serif;
+  border-radius: 10px;
+}
+
+/* Cancel button */
+#cancel {
+  float: right;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  font-weight: bold;
+  color: #555;
+}
+
+#cancel:hover {
+  color: #000;
+}
+
+/* Hide element utility */
+.hidden {
   display: none;
 }
 
-.popup.visible{
+.visible{
   display: block;
 }
 
-#cancel{
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 1.2rem;
+/* Inputs and buttons */
+input[type="password"] {
+  width: 100%;
+  height: 40px;
+  padding: 5px;
+  margin-top: 5px;
+  box-sizing: border-box;
+  border: 2px solid gray;
+  border-radius: 6px;
+  overlay: none;
+}
+
+button[type="submit"] {
+  padding: 8px 16px;
+  cursor: pointer;
+  background-color: #0069ed;
+  border: none;
+  height: 45px;
+  color: white;
+  font-weight: bold;
+  border-radius: 4px;
+  margin-left:  30%;
+}
+
+button[type="submit"]:hover {
+  background-color: #0053ba;
+}
+
+/* Labels */
+label {
+  cursor: pointer;
+  user-select: none;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  height: 60px;
+}
+
+.button-group button {
+  flex: 1;
+  margin-top:10px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  background: white;
+  cursor: pointer;
+  font-weight: 600;
+  border-radius: 6px;
+  transition: background-color 0.3s;
+}
+
+.button-group button.active {
+  background-color: #0069ed;
+  color: white;
+  border-color: #0053ba;
+}
+
+.button-group button:hover:not(.active) {
+  background-color: #f0f0f0;
+}
+
+
+
+/* dark-mode-popup */
+
+body.dark-mode #roomForm {
+  background-color: #121212 !important;
+  border-color: #333 !important;
+  color: #eee !important;
+  box-shadow: 0 2px 12px rgba(255, 255, 255, 0.1) !important;
+}
+
+/* And for other elements inside popup too: */
+
+body.dark-mode #roomForm #cancel {
+  color: #bbb;
+}
+
+body.dark-mode #roomForm #cancel:hover {
+  color: #fff;
+}
+
+body.dark-mode #roomForm input[type="password"] {
+  background-color: #222;
+  border: 1px solid #444;
+  color: #eee;
+}
+
+body.dark-mode #roomForm input[type="password"]::placeholder {
+  color: #999;
+}
+
+body.dark-mode #roomForm button[type="submit"] {
+  background-color: #2962ff;
+  color: white;
+  border: none;
+}
+
+body.dark-mode #roomForm button[type="submit"]:hover {
+  background-color: #0039cb;
+}
+
+body.dark-mode #roomForm label {
+  color: #ddd;
 }

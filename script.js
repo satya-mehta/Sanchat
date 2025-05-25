@@ -45,8 +45,7 @@ function scrollChatToBottom() {
   }
 }
 
-// Chat open/close
-document.getElementById('amigo').addEventListener('click', () => {
+function openChat(){
   document.getElementById('chat-container').classList.add('hidden');
   document.getElementById('chat-page').classList.remove('hidden');
   document.getElementById('header').classList.add('hidden');
@@ -55,15 +54,20 @@ document.getElementById('amigo').addEventListener('click', () => {
 
   // scroll once when opening the chat
   scrollChatToBottom();
-});
+}
 
-document.getElementById('back-btn').addEventListener('click', () => {
+function exitChat(){
   document.getElementById('chat-container').classList.remove('hidden');
   document.getElementById('chat-page').classList.add('hidden');
   document.getElementById('header').classList.remove('hidden');
   document.getElementById('searchBox').classList.remove('hidden');
   document.getElementById('developer-flex').classList.remove('hidden');
-});
+}
+
+// Chat open/close
+document.getElementById('amigo').addEventListener('click', () => openChat());
+
+document.getElementById('back-btn').addEventListener('click', () => exitChat());
 
 // Input & keyboard UX
 const messageInput = document.getElementById('messageInput');
@@ -151,7 +155,7 @@ document.querySelector(".switcher-login").addEventListener("click", () => {
 
 //----------------login-backend-logic--------------------
 
-const API_URL = "http://192.168.188.1:3000/api/auth"; // Change this if deployed elsewhere
+const API_URL = "https://sanchat.onrender.com/api/auth"; // Change this if deployed elsewhere
 
 // Login handler
 document.querySelector('.form-login').addEventListener('submit', async (e) => {
@@ -229,3 +233,119 @@ function logout() {
   localStorage.removeItem("username");
   location.reload();
 }
+
+//------------------temporary-chats-script---------------------------
+
+const cancelBtn = document.getElementById('cancel');
+const buttonGroupButtons = document.querySelectorAll('.button-group button');
+const passwordContainer = document.getElementById('passwordContainer');
+const secretKeyInput = document.getElementById('secretKey');
+const createRoomBtn = popup.querySelector('button[type="submit"]');
+
+let selectedRoomType = 'open'; // default
+
+// Toggle room type buttons
+buttonGroupButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    // Remove active from all buttons
+    buttonGroupButtons.forEach(b => b.classList.remove('active'));
+
+    // Set active on clicked button
+    btn.classList.add('active');
+
+    // Update selectedRoomType
+    selectedRoomType = btn.dataset.room;
+
+    // Show or hide secret key input based on room type
+    if (selectedRoomType === 'protected') {
+      passwordContainer.classList.remove('hidden');
+    } else {
+      passwordContainer.classList.add('hidden');
+      secretKeyInput.value = ''; // clear input
+    }
+  });
+});
+
+// Cancel button hides the popup
+cancelBtn.addEventListener('click', () => {
+  popup.classList.remove('visible');
+});
+
+// Create room button handler
+createRoomBtn.addEventListener('click', async (e) => {
+  e.preventDefault();
+
+  const secretKey = secretKeyInput.value.trim();
+
+  if (selectedRoomType === 'protected' && !secretKey) {
+    alert('Please enter a secret key for protected room.');
+    return;
+  }
+
+  try {
+    const res = await fetch('https://sanchat.onrender.com/api/temp/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        roomType: selectedRoomType,
+        secretKey: selectedRoomType === 'protected' ? secretKey : ''
+      })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      alert(`Room created! Code: ${data.roomCode}`);
+      popup.classList.remove('visible');
+      // You can do something else here, like auto-join the room or update UI
+      console.log('Created room code:', data.roomCode);
+    } else {
+      alert(data.message || 'Failed to create room.');
+    }
+  } catch (err) {
+    alert('Error creating room.');
+    console.error(err);
+  }
+});
+
+
+// fetch("/api/temp/join", { //join room
+//   method: "POST",
+//   headers: { "Content-Type": "application/json" },
+//   body: JSON.stringify({ roomCode: "ABC123", secretKey: "mysecret" })
+// })
+//   .then((res) => res.json())
+//   .then((data) => console.log("Joined:", data));
+
+
+// ====================Connect to server==========
+
+const socket = io("https://sanchat.onrender.com"); //deployed backend URL
+
+// Join a room
+function joinRoom(roomCode) {
+  socket.emit("joinRoom", { roomCode });
+  console.log("Joined room:", roomCode);
+}
+
+// Send a message
+function sendMessage(roomCode, text, sender) {
+  const messageObject = {
+    sender: sender || "Anonymous",
+    text,
+    timestamp: Date.now()
+  };
+
+  socket.emit("sendMessage", {
+    roomCode,
+    message: messageObject
+  });
+}
+
+// Receive a message
+socket.on("receiveMessage", (message) => {
+  console.log("Received message:", message);
+  // Update your UI here
+  displayIncomingMessage(message);
+});
+
