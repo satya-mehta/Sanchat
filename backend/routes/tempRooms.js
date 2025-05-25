@@ -14,6 +14,7 @@ function generateRoomCode(length = 6) {
 
 // Create room
 router.post("/create", (req, res) => {
+  console.log('⚡️ Received create-room request:', req.body);
   const { roomType, secretKey } = req.body;
 
   let roomCode;
@@ -28,6 +29,7 @@ router.post("/create", (req, res) => {
     messages: []
   };
 
+  console.log('⚡️ Sending back roomCode:', roomCode);
   res.json({ roomCode });
 });
 
