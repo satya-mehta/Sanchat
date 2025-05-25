@@ -30,22 +30,7 @@ mongoose.connect(process.env.MONGO_URI, {
 
 //-----------------------temporary-chat-handling-------
 
-fetch("/api/temp/create", { //create room
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ roomType: "protected", secretKey: "mysecret" })
-})
-  .then((res) => res.json())
-  .then((data) => console.log("Room code:", data.roomCode));
 
-
-fetch("/api/temp/join", { //join room
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ roomCode: "ABC123", secretKey: "mysecret" })
-})
-  .then((res) => res.json())
-  .then((data) => console.log("Joined:", data));
 
 // ------------------ 🔴 Socket.IO Integration ------------------
 // You only need this AFTER `app.listen()` is called
