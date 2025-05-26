@@ -5,6 +5,10 @@ const http = require("http");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const { Server } = require("socket.io");
+const allowedOrigins = [
+  "https://sanchat.onrender.com",  //  prod front-end
+  "http://127.0.0.1:5500"          //  local dev front-end
+];
 
 // Import your tempRooms router AND its in-memory `rooms` store
 const { router: tempRoomRouter, rooms } = require("./routes/tempRooms");
@@ -15,7 +19,11 @@ const PORT = process.env.PORT || 3000;
 
 // ─── MIDDLEWARE ───────────────────────────────────────
 // Allow same-origin requests (your front end is on the same domain)
-app.use(cors());
+app.use(cors({
+  origin: allowedOrigins,
+  methods: ["GET","POST"],
+  credentials: true
+}));
 app.use(express.json());
 
 // ─── ROUTES ────────────────────────────────────────────
@@ -33,7 +41,13 @@ mongoose
 
 // ─── HTTP + SOCKET.IO SETUP ────────────────────────────
 const httpServer = http.createServer(app);
-const io = new Server(httpServer); // default CORS allows same origin
+const io = new Server(httpServer, {
+  cors: {
+    origin: allowedOrigins,
+    methods: ["GET","POST"],
+    credentials: true
+  }
+}); // CORS which allows same + allowed origin
 
 // ─── SOCKET.IO EVENTS ─────────────────────────────────
 io.on("connection", socket => {
