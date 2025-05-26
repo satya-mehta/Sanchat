@@ -109,6 +109,11 @@ body.dark-mode .temporary-chat{
   background-color: #1a1a1a;
 }
 
+body.dark-mode #join-btn{
+  background-color: #1f1f1f;
+  color: grey;
+}
+
 #main{
   display: flex;
   flex-direction: row;
@@ -229,6 +234,15 @@ body.dark-mode .temporary-chat{
   border-radius: 10px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   margin-bottom: 1px;
+}
+
+#join-btn{
+  padding: 6px 10px;
+  background-color: #fff;
+  border: none;
+  height: 100%;
+  border-left: 1px solid green;
+  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
 }
 
 .temporary-chat{
@@ -586,7 +600,7 @@ input[type="password"] {
   padding: 5px;
   margin-top: 5px;
   box-sizing: border-box;
-  border: 2px solid gray;
+  /* border: 2px solid gray; */
   border-radius: 6px;
   overlay: none;
 }

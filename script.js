@@ -163,6 +163,7 @@ document.querySelector('.form-login').addEventListener('submit', async (e) => {
 
   const username = document.getElementById('login-username').value;
   const password = document.getElementById('login-password').value;
+  document.querySelector('.loader').style.display = "block";
 
   try {
     const res = await fetch(`${API_URL}/login`, {
@@ -180,7 +181,9 @@ document.querySelector('.form-login').addEventListener('submit', async (e) => {
       // Hide auth section, show dashboard
       document.querySelector('.forms-section').style.display = "none";
       document.querySelector('.blur').style.display = "none";
+      document.querySelector('.loader').style.display = "none";
     } else {
+      document.querySelector('.loader').style.display = "none";
       alert(data.message || "Login failed.");
     }
   } catch (err) {
@@ -349,3 +352,61 @@ socket.on("receiveMessage", (message) => {
   displayIncomingMessage(message);
 });
 
+//-------------joinRoom chat logic--------------
+
+let awaitingSecretFor = null;   // roomCode if we’re waiting on a secret
+const searchInput = document.getElementById("search-input");
+const joinBtn     = document.getElementById("join-btn");
+const chatPage    = document.getElementById("chat-page");
+const searchBox   = document.getElementById("searchBox");
+
+// Helper: show chat UI
+function showChatFor(roomCode) {
+  searchBox.style.display = "none";
+  chatPage.style.display = "block";
+  socket.emit("join-room", roomCode);
+}
+
+joinBtn.addEventListener("click", () => {
+  const code = searchInput.value.trim();
+  if (!code) return;
+
+  // If we’re already awaiting a secret, treat this as secret submission:
+  if (awaitingSecretFor) {
+    socket.emit("submit-secret", {
+      roomCode: awaitingSecretFor,
+      secret: code
+    });
+    return;
+  }
+
+  // Otherwise, first check if room exists / is protected
+  socket.emit("check-room", code);
+});
+
+socket.on("room-check-result", ({ exists, requiresSecret, roomName }) => {
+  if (!exists) {
+    alert("Room not found.");
+    return;
+  }
+
+  if (requiresSecret) {
+    // Ask user for secret
+    awaitingSecretFor = roomName;  
+    searchInput.value = "";
+    searchInput.placeholder = `Enter secret for room "${roomName}"`;
+  } else {
+    // No secret needed → join immediately
+    showChatFor(roomName);
+  }
+});
+
+socket.on("secret-result", ({ success }) => {
+  if (success && awaitingSecretFor) {
+    showChatFor(awaitingSecretFor);
+    awaitingSecretFor = null;
+  } else {
+    alert("Incorrect secret—try again.");
+    searchInput.value = "";
+  }
+});

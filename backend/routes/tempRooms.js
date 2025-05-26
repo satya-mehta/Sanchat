@@ -4,7 +4,7 @@ const router = express.Router();
 const rooms = {}; // In-memory temporary room store
 
 function generateRoomCode(length = 6) {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789';
   let code = '';
   for (let i = 0; i < length; i++) {
     code += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -45,4 +45,7 @@ router.post("/join", (req, res) => {
   res.json({ success: true, roomCode });
 });
 
-module.exports = router;
+module.exports = {
+  router,
+  rooms,
+};

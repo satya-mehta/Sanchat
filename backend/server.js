@@ -1,68 +1,90 @@
 // backend/server.js
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-const socketio = require('socket.io');
 require("dotenv").config();
+const express = require("express");
+const http = require("http");
+const cors = require("cors");
+const mongoose = require("mongoose");
+const { Server } = require("socket.io");
+
+// Import your tempRooms router AND its in-memory `rooms` store
+const { router: tempRoomRouter, rooms } = require("./routes/tempRooms");
+const authRoutes = require("./routes/auth");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+// ─── MIDDLEWARE ───────────────────────────────────────
+// Allow same-origin requests (your front end is on the same domain)
 app.use(cors());
 app.use(express.json());
 
-// Routes
-const authRoutes = require("./routes/auth");
+// ─── ROUTES ────────────────────────────────────────────
 app.use("/api/auth", authRoutes);
+app.use("/api/temp", tempRoomRouter);
 
-const tempRoomRoutes = require("./routes/tempRooms");
-app.use("/api/temp", tempRoomRoutes);
+// ─── MONGODB CONNECTION ─────────────────────────────────
+mongoose
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  })
+  .then(() => console.log("✅ Connected to MongoDB Atlas"))
+  .catch(err => console.error("❌ MongoDB connection error:", err));
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => console.log("Connected to MongoDB Atlas"))
-.catch((err) => console.error("MongoDB connection error:", err));
+// ─── HTTP + SOCKET.IO SETUP ────────────────────────────
+const httpServer = http.createServer(app);
+const io = new Server(httpServer); // default CORS allows same origin
 
+// ─── SOCKET.IO EVENTS ─────────────────────────────────
+io.on("connection", socket => {
+  console.log("🟢 Socket connected:", socket.id);
 
-//-----------------------temporary-chat-handling-------
-
-
-
-// ------------------ 🔴 Socket.IO Integration ------------------
-// You only need this AFTER `app.listen()` is called
-const server = app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
-const io = socketio(server, {
-  cors: {
-    origin: "*", // Or restrict to your frontend
-    methods: ["GET", "POST"]
-  }
-});
-
-const rooms = {};
-
-io.on("connection", (socket) => {
-  console.log("Socket connected:", socket.id);
-
-  socket.on("joinRoom", ({ roomCode }) => {
-    socket.join(roomCode);
-    console.log(`Joined room: ${roomCode}`);
+  // 1) Check if room exists & whether it’s protected
+  socket.on("check-room", roomCode => {
+    const room = rooms[roomCode];
+    if (!room) {
+      socket.emit("room-check-result", { exists: false });
+    } else {
+      socket.emit("room-check-result", {
+        exists: true,
+        requiresSecret: Boolean(room.secretKey),
+        roomName: roomCode
+      });
+    }
   });
 
-  socket.on("sendMessage", ({ roomCode, message }) => {
-    if (!rooms[roomCode]) rooms[roomCode] = { messages: [] };
-    rooms[roomCode].messages.push(message);
+  // 2) Verify a submitted secret
+  socket.on("submit-secret", ({ roomCode, secret }) => {
+    const room = rooms[roomCode];
+    const success = room && room.secretKey === secret;
+    socket.emit("secret-result", { success });
+  });
 
-    socket.to(roomCode).emit("receiveMessage", message);
+  // 3) Actually join the room
+  socket.on("join-room", roomCode => {
+    if (rooms[roomCode]) {
+      socket.join(roomCode);
+      console.log(`➡️ Socket ${socket.id} joined room ${roomCode}`);
+      socket.emit("joined-room-success", { roomCode });
+    } else {
+      socket.emit("joined-room-success", { error: "Room no longer exists." });
+    }
+  });
+
+  // 4) Relay chat messages to everyone else in the room
+  socket.on("sendMessage", ({ roomCode, message }) => {
+    if (rooms[roomCode]) {
+      rooms[roomCode].messages.push(message);
+      socket.to(roomCode).emit("receiveMessage", message);
+    }
   });
 
   socket.on("disconnect", () => {
-    console.log("Socket disconnected:", socket.id);
+    console.log("🔴 Socket disconnected:", socket.id);
   });
+});
+
+// ─── START THE SERVER ──────────────────────────────────
+httpServer.listen(PORT, "0.0.0.0", () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 });
