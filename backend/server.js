@@ -8,7 +8,7 @@ const { Server } = require("socket.io");
 const allowedOrigins = [
   "https://sanchat.onrender.com",  //  prod front-end
   "http://127.0.0.1:5500",          //  local dev front-end
-  "https://t0bpszzs-5500.inc1.devtunnels.ms/" //port forwarding
+  "https://t0bpszzs-5500.inc1.devtunnels.ms" //port forwarding
 ];
 
 // Import your tempRooms router AND its in-memory `rooms` store
