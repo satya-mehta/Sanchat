@@ -1,8 +1,9 @@
+// routes/tempRooms.js
 const express = require("express");
 const router = express.Router();
+const Room = require("../models/Room"); // MongoDB Room model
 
-const rooms = {}; // In-memory temporary room store
-
+// Utility to generate a 6-char room code
 function generateRoomCode(length = 6) {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789';
   let code = '';
@@ -12,40 +13,51 @@ function generateRoomCode(length = 6) {
   return code;
 }
 
-// Create room
-router.post("/create", (req, res) => {
-  console.log('⚡️ Received create-room request:', req.body);
+// Create Room
+router.post("/create", async (req, res) => {
+  console.log("⚡️ Received create-room request:", req.body);
   const { roomType, secretKey } = req.body;
 
   let roomCode;
-  do {
-    roomCode = generateRoomCode(6);
-  } while (rooms[roomCode]);
+  let isUnique = false;
 
-  rooms[roomCode] = {
+  // Generate unique room code
+  while (!isUnique) {
+    roomCode = generateRoomCode();
+    const existing = await Room.findOne({ code: roomCode });
+    if (!existing) isUnique = true;
+  }
+
+  const newRoom = new Room({
+    code: roomCode,
     type: roomType,
     secretKey: roomType === "protected" ? secretKey : null,
-    createdAt: Date.now(),
-    messages: []
-  };
+    messages: [],
+    createdAt: new Date(),
+    lastActive: new Date()
+  });
 
-  console.log('⚡️ Sending back roomCode:', roomCode);
+  await newRoom.save();
+
+  console.log("✅ Created room with code:", roomCode);
   res.json({ roomCode });
 });
 
-// Join room
-router.post("/join", (req, res) => {
+// Join Room
+router.post("/join", async (req, res) => {
   const { roomCode, secretKey } = req.body;
-  const room = rooms[roomCode];
 
-  if (!room) return res.status(404).json({ error: "Room not found" });
-  if (room.type === "protected" && room.secretKey !== secretKey)
+  const room = await Room.findOne({ code: roomCode });
+
+  if (!room) {
+    return res.status(404).json({ error: "Room not found" });
+  }
+
+  if (room.type === "protected" && room.secretKey !== secretKey) {
     return res.status(403).json({ error: "Invalid secret key" });
+  }
 
   res.json({ success: true, roomCode });
 });
 
-module.exports = {
-  router,
-  rooms,
-};
+module.exports = router;

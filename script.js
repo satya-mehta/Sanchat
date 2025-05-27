@@ -4,6 +4,10 @@ const body = document.body;
 toggle.checked = true; //by default dark mode
 body.classList.add('dark-mode');
 
+let roomCode = null;
+let lastSender = null;
+let username = "UserME";
+
 // Dark-mode persistence
 if (localStorage.getItem('dark-mode') === 'true') {
   body.classList.add('dark-mode');
@@ -312,44 +316,37 @@ createRoomBtn.addEventListener('click', async (e) => {
 });
 
 
-// fetch("/api/temp/join", { //join room
-//   method: "POST",
-//   headers: { "Content-Type": "application/json" },
-//   body: JSON.stringify({ roomCode: "ABC123", secretKey: "mysecret" })
-// })
-//   .then((res) => res.json())
-//   .then((data) => console.log("Joined:", data));
-
-
 // ====================Connect to server==========
 
 const socket = io("https://sanchat.onrender.com"); //deployed backend URL
 
 // Join a room
 function joinRoom(roomCode) {
-  socket.emit("joinRoom", { roomCode });
+  socket.emit("join-room", { roomCode });
   console.log("Joined room:", roomCode);
 }
 
 // Send a message
-function sendMessage(roomCode, text, sender) {
-  const messageObject = {
-    sender: sender || "Anonymous",
-    text,
-    timestamp: Date.now()
-  };
+// function sendMessage(messageText) {
+//   const username = localStorage.getItem("Username");
+//   const message = {
+//     sender: username,
+//     text: messageText,
+//     time: new Date().toISOString()
+//   };
 
-  socket.emit("sendMessage", {
-    roomCode,
-    message: messageObject
-  });
-}
+//   socket.emit("sendMessage", { roomCode: roomCode, message });
+
+//   displayMessage(message);
+//   saveMessageToLocal(roomCode, message);
+// }
+
 
 // Receive a message
 socket.on("receiveMessage", (message) => {
   console.log("Received message:", message);
-  // Update your UI here
-  displayIncomingMessage(message);
+  displayMessage(message);
+  saveMessageToLocal(roomCode, message);
 });
 
 //-------------joinRoom chat logic--------------
@@ -359,11 +356,11 @@ const searchInput = document.getElementById("search-input");
 const joinBtn     = document.getElementById("join-btn");
 const chatPage    = document.getElementById("chat-page");
 const searchBox   = document.getElementById("searchBox");
+const searchicon  = document.getElementById("search-icon");
 
 // Helper: show chat UI
 function showChatFor(roomCode) {
-  searchBox.style.display = "none";
-  chatPage.style.display = "block";
+  openChat();
   socket.emit("join-room", roomCode);
 }
 
@@ -394,10 +391,13 @@ socket.on("room-check-result", ({ exists, requiresSecret, roomName }) => {
     // Ask user for secret
     awaitingSecretFor = roomName;  
     searchInput.value = "";
+    searchicon.src = "assets/lock.svg";
     searchInput.placeholder = `Enter secret for room "${roomName}"`;
   } else {
     // No secret needed → join immediately
     showChatFor(roomName);
+    searchInput.placeholder = "Search";
+    searchicon.src = "assets/search.svg";
   }
 });
 
@@ -405,8 +405,100 @@ socket.on("secret-result", ({ success }) => {
   if (success && awaitingSecretFor) {
     showChatFor(awaitingSecretFor);
     awaitingSecretFor = null;
+    searchInput.placeholder = "Search";
+    searchInput.value = "";
+    searchicon.src = "assets/search.svg";
   } else {
     alert("Incorrect secret—try again.");
     searchInput.value = "";
   }
 });
+
+socket.on("joined-room-success", ({ roomCode, error }) => {
+  if (error) {
+    alert(error);
+    return;
+  }
+
+  // Load and show old messages from localStorage
+  const oldMessages = getMessagesFromLocal(roomCode);
+  oldMessages.forEach(msg => displayMessage(msg)); // your existing function
+});
+
+socket.on("receiveMessage", (message) => {
+  displayMessage(message); // show in chat window
+  saveMessageToLocal(roomCode, message); // store in localStorage
+});
+
+//----------function to save messages locally------
+
+function saveMessageToLocal(roomCode, message) {
+  const key = `sanchat_messages_${roomCode}`;
+  let messages = JSON.parse(localStorage.getItem(key)) || [];
+  messages.push(message);
+  localStorage.setItem(key, JSON.stringify(messages));
+}
+
+function getMessagesFromLocal(roomCode) {
+  const key = `sanchat_messages_${roomCode}`;
+  return JSON.parse(localStorage.getItem(key)) || [];
+}
+//---------function to display messages------
+function displayMessage(msg) {
+  // msg.sender: the real sender’s username
+  // msg.text:   the message text
+
+  // 1) If this message’s sender is different from the last one shown,
+  //    insert an <h4> header.
+  if (msg.sender !== lastSender) {
+    const header = document.createElement("h4");
+    header.textContent = (msg.sender === username) ? "You" : msg.sender; //for your messages
+    chatMessages.appendChild(header);
+
+    lastSender = msg.sender;
+  }
+
+  // 2) Now insert the message bubble
+  const bubble = document.createElement("div");
+  bubble.classList.add("message", msg.sender === username ? "sent" : "received");
+  bubble.textContent = msg.text;
+  chatMessages.appendChild(bubble);
+
+  // 3) Scroll to bottom
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+//-----------send message button handeller------
+
+const sendBtn = document.getElementById("sendBtn");
+
+// Send helper
+function sendMessage() {
+  const text = messageInput.value.trim();
+  username = localStorage.getItem("Username");
+  //if (!text || !roomCode) return;  // no empty or no room
+
+  const msg = {
+    sender: username,
+    text,
+    time: new Date().toISOString()
+  };
+
+  // Emit to others
+  socket.emit("sendMessage", { roomCode, message: msg });
+
+  // Display locally
+  displayMessage(msg);
+  saveMessageToLocal(roomCode, msg);
+
+  messageInput.value = "";
+}
+
+// Attach to button & Enter
+sendBtn.addEventListener("click", sendMessage);
+messageInput.addEventListener("keydown", e => {
+  if (e.key === "Enter") sendMessage();
+});
+
+
+
+//-----------function to clear the chat messages------

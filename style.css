@@ -68,13 +68,11 @@ body.dark-mode .chat-messages{
 
 
 body.dark-mode .message.sent {
-  background-color: #2b4b5b;
-  color: #fff;
+  border-left: 1px #4FB6EC solid;
 }
 
 body.dark-mode .message.received {
-  background-color: #333;
-  color: #fff;
+  border-left: 1px crimson solid;
 }
 
 body.dark-mode .chat-input {
@@ -440,20 +438,17 @@ body.dark-mode #join-btn{
 
 .message{
   max-width: 70%;
-  padding: 10px 15px;
-  border-radius: 18px;
+  padding: 2px 15px;
   font-size: 0.95rem;
   line-height: 1.4;
 }
 
 .message.sent{
-  align-self: flex-end;
-  background-color: #daf1ff;
+  border-left: 1px #4FB6EC solid;
 }
 
 .message.received{
-  align-items: flex-start;
-  background-color: #e8e8e8;
+  border-left: 1px crimson solid;
 }
 
 .chat-input {

@@ -113,7 +113,7 @@
     </div>
 
     <section id="searchBox">
-      <img src="assets/search.svg" alt="Search Icon" />
+      <img id="search-icon" src="assets/search.svg" alt="Search Icon" />
       <input id="search-input" type="text" placeholder="Search" aria-label="Search chat" />
       <button id="join-btn">Join</button>
     </section>
@@ -143,21 +143,26 @@
           <h3 style="margin-left: 20px;">Create Temporary Chat Room</h3>
         </div>
         <div class="chat-item" id="amigo" style="display: none;">
-          <img class="profile-image" src="assets/profile.svg" alt="Su's Profile Picture" />
-          <p class="usernames">Su •</p>
+          <img class="profile-image" src="assets/profile.svg" alt="user's Profile Picture" />
+          <p class="usernames">User •</p>
         </div>
         <p id="no-friend">No friends to see</p>
       
       </main>
+
+      <!----------------Chat-page-------------->
+
       <div id="chat-page" class="hidden">
         <div id="chat-header">
           <button id="back-btn">←</button>
-          <img src="assets/profile.svg" class="chat-profile" alt="su">
-          <span class="chat-username">Su</span>
+          <img src="assets/profile.svg" class="chat-profile" alt="user-profile">
+          <span class="chat-username">user</span>
         </div>
 
         <div class="chat-messages" id="chatMessages">
+          <h4>User</h4>
           <div class="message received">Hey! how's it going?</div>
+          <h4>You</h4>
           <div class="message sent">It's Working</div>
         </div>
 
