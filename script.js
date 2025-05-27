@@ -6,6 +6,7 @@ body.classList.add('dark-mode');
 
 let roomCode = null;
 let lastSender = null;
+let lastMessage = null;
 let username = "UserME";
 
 // Dark-mode persistence
@@ -322,32 +323,11 @@ const socket = io("https://sanchat.onrender.com"); //deployed backend URL
 
 // Join a room
 function joinRoom(roomCode) {
-  socket.emit("join-room", { roomCode });
+  console.log("📤 Emitting join-room with:", roomCode);
+  socket.emit("join-room", roomCode);
   console.log("Joined room:", roomCode);
 }
 
-// Send a message
-// function sendMessage(messageText) {
-//   const username = localStorage.getItem("Username");
-//   const message = {
-//     sender: username,
-//     text: messageText,
-//     time: new Date().toISOString()
-//   };
-
-//   socket.emit("sendMessage", { roomCode: roomCode, message });
-
-//   displayMessage(message);
-//   saveMessageToLocal(roomCode, message);
-// }
-
-
-// Receive a message
-socket.on("receiveMessage", (message) => {
-  console.log("Received message:", message);
-  displayMessage(message);
-  saveMessageToLocal(roomCode, message);
-});
 
 //-------------joinRoom chat logic--------------
 
@@ -357,11 +337,12 @@ const joinBtn     = document.getElementById("join-btn");
 const chatPage    = document.getElementById("chat-page");
 const searchBox   = document.getElementById("searchBox");
 const searchicon  = document.getElementById("search-icon");
+username = localStorage.getItem("username");
 
 // Helper: show chat UI
 function showChatFor(roomCode) {
   openChat();
-  socket.emit("join-room", roomCode);
+  // socket.emit("join-room", roomCode);
 }
 
 joinBtn.addEventListener("click", () => {
@@ -387,6 +368,8 @@ socket.on("room-check-result", ({ exists, requiresSecret, roomName }) => {
     return;
   }
 
+  roomCode = roomName;
+
   if (requiresSecret) {
     // Ask user for secret
     awaitingSecretFor = roomName;  
@@ -396,6 +379,7 @@ socket.on("room-check-result", ({ exists, requiresSecret, roomName }) => {
   } else {
     // No secret needed → join immediately
     showChatFor(roomName);
+    joinRoom(roomCode);
     searchInput.placeholder = "Search";
     searchicon.src = "assets/search.svg";
   }
@@ -403,8 +387,10 @@ socket.on("room-check-result", ({ exists, requiresSecret, roomName }) => {
 
 socket.on("secret-result", ({ success }) => {
   if (success && awaitingSecretFor) {
+    roomCode = awaitingSecretFor;
     showChatFor(awaitingSecretFor);
     awaitingSecretFor = null;
+    joinRoom(roomCode);
     searchInput.placeholder = "Search";
     searchInput.value = "";
     searchicon.src = "assets/search.svg";
@@ -419,15 +405,20 @@ socket.on("joined-room-success", ({ roomCode, error }) => {
     alert(error);
     return;
   }
-
+  
   // Load and show old messages from localStorage
   const oldMessages = getMessagesFromLocal(roomCode);
   oldMessages.forEach(msg => displayMessage(msg)); // your existing function
 });
 
+//receive a message
+
 socket.on("receiveMessage", (message) => {
-  displayMessage(message); // show in chat window
-  saveMessageToLocal(roomCode, message); // store in localStorage
+  username = localStorage.getItem('username');
+  if (message.sender === username && lastMessage === message.text) return; //sent message comes back from server 
+  lastMessage = message.text;
+  displayMessage(message); 
+  saveMessageToLocal(roomCode, message); 
 });
 
 //----------function to save messages locally------
@@ -452,7 +443,9 @@ function displayMessage(msg) {
   //    insert an <h4> header.
   if (msg.sender !== lastSender) {
     const header = document.createElement("h4");
+    header.classList.add("userh4");
     header.textContent = (msg.sender === username) ? "You" : msg.sender; //for your messages
+    if(header.textContent === "You") header.style.color = "#9fc1e8";
     chatMessages.appendChild(header);
 
     lastSender = msg.sender;
@@ -474,8 +467,8 @@ const sendBtn = document.getElementById("sendBtn");
 // Send helper
 function sendMessage() {
   const text = messageInput.value.trim();
-  username = localStorage.getItem("Username");
-  //if (!text || !roomCode) return;  // no empty or no room
+  username = localStorage.getItem("username");
+  if (!text || !roomCode) return;  // no empty or no room
 
   const msg = {
     sender: username,
@@ -483,6 +476,7 @@ function sendMessage() {
     time: new Date().toISOString()
   };
 
+  lastMessage = msg.text; // keeping track of last message
   // Emit to others
   socket.emit("sendMessage", { roomCode, message: msg });
 
