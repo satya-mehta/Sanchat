@@ -9,6 +9,20 @@ let lastSender = null;
 let lastMessage = null;
 let username = "UserME";
 
+const mainContainer = document.querySelector('.main-container');
+
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', () => {
+    const viewportHeight = window.visualViewport.height;
+    mainContainer.style.height = viewportHeight + 'px';
+  });
+
+  window.visualViewport.addEventListener('scroll', () => {
+    const viewportHeight = window.visualViewport.height;
+    mainContainer.style.height = viewportHeight + 'px';
+  });
+}
+
 // Dark-mode persistence
 if (localStorage.getItem('dark-mode') === 'true') {
   body.classList.add('dark-mode');
@@ -39,16 +53,32 @@ updateTime();
 setInterval(updateTime, 30000);
 
 // Scroll helper
-function scrollChatToBottom() {
+function scrollChatToBottom(pad = true) {
   const chatMessages = document.getElementById('chatMessages');
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-
-  // also scroll the last message into view, in case flex gaps cause an off-by-one
   const msgs = chatMessages.querySelectorAll('.message');
+
   if (msgs.length) {
-    msgs[msgs.length - 1].scrollIntoView({ behavior: 'auto' });
+    // Smooth scroll last message into view aligned to bottom
+    msgs[msgs.length - 1].scrollIntoView({
+      behavior: 'smooth',
+      block: 'end',
+      inline: 'nearest'
+    });
+
+    if (pad) {
+      // Add extra scroll in case input is covered by keyboard
+      setTimeout(() => {
+        const maxScrollTop = chatMessages.scrollHeight - chatMessages.clientHeight;
+        chatMessages.scrollTop = Math.min(chatMessages.scrollTop + 100, maxScrollTop);
+      }, 200);
+    }
+  } else {
+    // If no messages, just scroll to bottom instantly
+    chatMessages.scrollTop = chatMessages.scrollHeight;
   }
 }
+
+
 
 function openChat(){
   document.getElementById('chat-container').classList.add('hidden');
@@ -56,6 +86,7 @@ function openChat(){
   document.getElementById('header').classList.add('hidden');
   document.getElementById('searchBox').classList.add('hidden');
   document.getElementById('developer-flex').classList.add('hidden');
+  document.querySelector('.chat-username').innerText = "Room: " + roomCode;
 
   // scroll once when opening the chat
   scrollChatToBottom();
@@ -81,11 +112,16 @@ const chatMessages = document.getElementById('chatMessages');
 // On first focus, any click, or viewport resize, re-scroll to bottom.
 ['focus', 'click'].forEach(evt => {
   messageInput.addEventListener(evt, () => {
-    setTimeout(scrollChatToBottom, 300);
+    setTimeout(() => {
+      scrollChatToBottom();
+    }, 300);
   });
 });
+
 window.addEventListener('resize', () => {
-  setTimeout(scrollChatToBottom, 300);
+  setTimeout(() => {
+    scrollChatToBottom();
+  }, 300);
 });
 
 // Scroll on initial page load too

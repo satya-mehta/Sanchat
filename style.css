@@ -7,8 +7,9 @@
 }
 
 html, body{
-  height: 100%;
+  height: 100dvh;
   padding-bottom: 5px;
+  overflow: hidden;
 }
 
 .hidden{
@@ -86,7 +87,7 @@ body.dark-mode .chat-input input {
 }
 
 body.dark-mode .chat-input button {
-  background-color: none;
+  background-color: #2a2a2a;
 }
 
 body.dark-mode .chat-item:hover {
@@ -137,12 +138,8 @@ body.dark-mode #join-btn{
 .toggle-switch .slider {
   -webkit-tap-highlight-color: transparent; /* remove mobile flash */
   touch-action: manipulation;               /* faster, no double-tap delays */
-  user-select: none;                        /* no accidental text-selection artifacts */
+  user-select: none;                        /* no accidental 
 }
-
-
-
-/* SEND BUTTON (with img inside) */
 
 .chat-input button,
 .chat-input button:focus {
@@ -192,7 +189,7 @@ body.dark-mode #join-btn{
   max-width: 600px;
   margin: 20px auto;
   padding: 15px;
-  height: 100%;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
 }
@@ -375,6 +372,7 @@ body.dark-mode #join-btn{
   flex: 1;
   display: flex;
   flex-direction: column;
+  height: 100dvh;
   overflow: hidden;
 }
 
@@ -417,6 +415,7 @@ body.dark-mode #join-btn{
 .chat-username{
   font-weight: bold;
   font-size: 1rem;
+  margin-left: 5px;
 }
 
 .userh4{
@@ -425,7 +424,7 @@ body.dark-mode #join-btn{
 }
 
 .chat-messages{
-  flex:1 1 0;
+  flex: 1;         /*1 1 0;*/
   padding: 15px;
   overflow-y: auto;
   display: flex;
@@ -435,6 +434,8 @@ body.dark-mode #join-btn{
   min-height: 0;
   scrollbar-width: none;       /* Firefox */
   -ms-overflow-style: none;    /* IE and Edge*/
+
+  height: calc(100vh - 60px);
 }
 
 .chat-messages::-webkit-scrollbar {
@@ -464,10 +465,14 @@ body.dark-mode #join-btn{
   padding: 0px 10px;
   display: flex;
   align-items: center;
-  margin-top: auto; /* optional spacing */
-  position: sticky;
+  margin: 5px; /* optional spacing */
+ 
+  position: relative;
   bottom: 0;
   background-color: #f5f5f5;
+  box-sizing: border-box;
+  z-index: 1000;
+  flex-shrink: 0;
 }
 
 .chat-input input{
@@ -482,7 +487,7 @@ body.dark-mode #join-btn{
 .chat-input button{
   margin-left: 10px;
   padding: 10px 16px;
-  background-color: none;
+  background-color: #f5f5f5;
   border: none;
   cursor: pointer;
   margin-right: 0px;
