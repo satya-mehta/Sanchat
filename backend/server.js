@@ -17,7 +17,8 @@ const activeUsers = {};
 const deleteTimers = {};
 
 // Import tempRooms router AND its in-memory `rooms` store
-const { router: tempRoomRouter, rooms } = require("./routes/tempRooms");
+const tempRoomRouter = require("./routes/tempRooms");
+
 const authRoutes = require("./routes/auth");
 
 const app = express();
