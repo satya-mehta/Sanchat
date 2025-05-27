@@ -15,6 +15,7 @@ function generateRoomCode(length = 6) {
 
 // Create Room
 router.post("/create", async (req, res) => {
+  try{
   console.log("⚡️ Received create-room request:", req.body);
   const { roomType, secretKey } = req.body;
 
@@ -40,7 +41,11 @@ router.post("/create", async (req, res) => {
   await newRoom.save();
 
   console.log("✅ Created room with code:", roomCode);
-  res.json({ roomCode });
+  return res.json({ roomCode });
+}catch(err){
+  console.error("X Error in /api/temp/create:", err);
+  return res.status(500).json({error: "Internal server error"});
+}
 });
 
 // Join Room
