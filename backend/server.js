@@ -189,7 +189,7 @@ setInterval(() => {
           delete activeUsers[roomCode];
           delete deleteTimers[roomCode];
           console.log(`🗑️ Room ${roomCode} deleted after 60 min of inactivity.`);
-        }, 60 * 60 * 1000),
+        }, 1 * 60 * 1000),
         scheduledAt: Date.now()
       };
 
@@ -207,11 +207,15 @@ setInterval(() => {
 
 setInterval(() => {
   console.log("🕵️ Checking rooms marked for deletion...");
+  const now = Date.now();
+
   for (const roomCode in deleteTimers) {
-    const elapsed = Date.now() - deleteTimers[roomCode].scheduledAt;
-    const remaining = Math.max(0, (60 * 60 * 1000 - elapsed) / 1000).toFixed(0);
+    const { scheduledAt } = deleteTimers[roomCode];
+    const remaining = Math.max(0, ((scheduledAt + 60 * 60 * 1000) - now) / 1000).toFixed(0);
+
     console.log(`⏳ Room "${roomCode}" scheduled for deletion in ${remaining} seconds.`);
   }
+
   if (Object.keys(deleteTimers).length === 0) {
     console.log("✅ No rooms currently scheduled for deletion.");
   }
