@@ -413,7 +413,7 @@ socket.on("room-check-result", ({ exists, requiresSecret, roomName }) => {
     searchInput.placeholder = `Enter secret for room "${roomName}"`;
   } else {
     // No secret needed → join immediately
-    showChatFor(roomName);
+    // showChatFor(roomName);
     joinRoom(roomCode);
     searchInput.placeholder = "Search";
     searchicon.src = "assets/search.svg";
@@ -425,7 +425,7 @@ socket.on("room-check-result", ({ exists, requiresSecret, roomName }) => {
 socket.on("secret-result", ({ success }) => {
   if (success && awaitingSecretFor) {
     roomCode = awaitingSecretFor;
-    showChatFor(awaitingSecretFor);
+    //showChatFor(awaitingSecretFor);
     awaitingSecretFor = null;
     joinRoom(roomCode);
     searchInput.placeholder = "Search";
@@ -444,7 +444,7 @@ socket.on("joined-room-success", ({ roomCode, error }) => {
     alert(error);
     return;
   }
-  
+    showChatFor(roomName);
   // Load and show old messages from localStorage
   const oldMessages = getMessagesFromLocal(roomCode);
   oldMessages.forEach(msg => displayMessage(msg)); // your existing function
