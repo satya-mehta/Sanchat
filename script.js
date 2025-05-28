@@ -450,6 +450,16 @@ socket.on("joined-room-success", ({ roomCode, error }) => {
   oldMessages.forEach(msg => displayMessage(msg)); // your existing function
 });
 
+socket.on("user-joined", ({ username, roomCode }) => {
+  console.log(`${username} joined ${roomCode}`);
+  // Add this user to the UI list of active users
+});
+
+socket.on("user-left", ({ username, roomCode }) => {
+  console.log(`${username} left ${roomCode}`);
+  // Remove this user from the UI list
+});
+
 socket.on("active-users", ({roomCode, activeUsernames}) => {
   console.log(`🟢 Active users in ${roomCode}:`, activeUsernames);
 });

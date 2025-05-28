@@ -30,7 +30,7 @@ const PORT = process.env.PORT || 3000;
 // Allow same-origin requests (your front end is on the same domain)
 app.use(cors({
   origin: allowedOrigins,
-  methods: ["GET","POST"],
+  methods: ["GET", "POST"],
   credentials: true
 }));
 app.use(express.json());
@@ -53,7 +53,7 @@ const httpServer = http.createServer(app);
 const io = new Server(httpServer, {
   cors: {
     origin: allowedOrigins,
-    methods: ["GET","POST"],
+    methods: ["GET", "POST"],
     credentials: true
   }
 }); // CORS which allows same + allowed origin
@@ -86,13 +86,13 @@ io.on("connection", socket => {
   });
 
   // 3️⃣ Join the room
-  socket.on("join-room", async ({roomCode, username}) => {
+  socket.on("join-room", async ({ roomCode, username }) => {
     const room = await Room.findOne({ code: roomCode });
 
     if (!room) {
       socket.emit("joined-room-success", { error: "Room no longer exists." });
       return;
-      }
+    }
 
     socket.join(roomCode);
     console.log(`➡️ ${username} (Socket ${socket.id}) joined room ${roomCode}`);
@@ -110,6 +110,11 @@ io.on("connection", socket => {
     if (!activeUsers[roomCode]) activeUsers[roomCode] = new Set();
     activeUsers[roomCode].add(socket.id);
 
+    socket.to(roomCode).emit("user-joined", { // to notify others
+      username,
+      roomCode
+    });
+
     // Update last activity
     await Room.updateOne({ code: roomCode }, { lastActive: new Date() });
   });
@@ -121,7 +126,7 @@ io.on("connection", socket => {
   });
 
   socket.on("heartbeat-reply", (roomCode) => {
-    if(!activeUsers[roomCode]) activeUsers[roomCode] = new Set();
+    if (!activeUsers[roomCode]) activeUsers[roomCode] = new Set();
     activeUsers[roomCode].add(socket.id);
   });
 
@@ -132,14 +137,18 @@ io.on("connection", socket => {
         activeUsers[roomCode].delete(socket.id);
 
         // If no users left, schedule deletion
+
         if (activeUsers[roomCode].size === 0) {
           console.log(`🕒 Room ${roomCode} empty — will delete after 60 minutes.`);
-          deleteTimers[roomCode] = setTimeout(async () => {
-            await Room.deleteOne({ code: roomCode });
-            delete activeUsers[roomCode];
-            delete deleteTimers[roomCode];
-            console.log(`🗑️ Room ${roomCode} deleted after 60 min of inactivity.`);
-          }, 60 * 60 * 1000); // 60 minutes
+          deleteTimers[roomCode] = {
+            timeout: setTimeout(async () => {
+              await Room.deleteOne({ code: roomCode });
+              delete activeUsers[roomCode];
+              delete deleteTimers[roomCode];
+              console.log(`🗑️ Room ${roomCode} deleted after 60 min of inactivity.`);
+            }, 60 * 60 * 1000),
+            scheduledAt: Date.now()
+          };
         }
       }
     }
@@ -174,14 +183,16 @@ setInterval(() => {
     if (socketIds.length === 0) {
       console.log(`⚠️ Room ${roomCode} had no heartbeat replies.`);
 
-      if (!deleteTimers[roomCode]) {
-        deleteTimers[roomCode] = setTimeout(async () => {
+      deleteTimers[roomCode] = {
+        timeout: setTimeout(async () => {
           await Room.deleteOne({ code: roomCode });
           delete activeUsers[roomCode];
           delete deleteTimers[roomCode];
-          console.log(`🗑️ Room ${roomCode} deleted after heartbeat inactivity.`);
-        }, 60 * 60 * 1000);
-      }
+          console.log(`🗑️ Room ${roomCode} deleted after 60 min of inactivity.`);
+        }, 60 * 60 * 1000),
+        scheduledAt: Date.now()
+      };
+
     } else {
       if (deleteTimers[roomCode]) {
         clearTimeout(deleteTimers[roomCode]);
@@ -193,6 +204,19 @@ setInterval(() => {
     activeUsers[roomCode] = new Set();
   }
 }, 12000);
+
+setInterval(() => {
+  console.log("🕵️ Checking rooms marked for deletion...");
+  for (const roomCode in deleteTimers) {
+    const elapsed = Date.now() - deleteTimers[roomCode].scheduledAt;
+    const remaining = Math.max(0, (60 * 60 * 1000 - elapsed) / 1000).toFixed(0);
+    console.log(`⏳ Room "${roomCode}" scheduled for deletion in ${remaining} seconds.`);
+  }
+  if (Object.keys(deleteTimers).length === 0) {
+    console.log("✅ No rooms currently scheduled for deletion.");
+  }
+}, 10000);
+
 
 
 // ─── START THE SERVER ──────────────────────────────────
