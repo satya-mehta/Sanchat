@@ -7,6 +7,8 @@ const mongoose = require("mongoose");
 const { Server } = require("socket.io");
 const Room = require('./models/Room');
 
+const socketToUsername = {};
+
 const allowedOrigins = [
   "https://sanchat.onrender.com",  //  prod front-end
   "http://127.0.0.1:5500",          //  local dev front-end
@@ -84,17 +86,19 @@ io.on("connection", socket => {
   });
 
   // 3️⃣ Join the room
-  socket.on("join-room", async roomCode => {
+  socket.on("join-room", async ({roomCode, username}) => {
     const room = await Room.findOne({ code: roomCode });
 
     if (!room) {
       socket.emit("joined-room-success", { error: "Room no longer exists." });
       return;
-    }
+      }
 
     socket.join(roomCode);
-    console.log(`➡️ Socket ${socket.id} joined room ${roomCode}`);
+    console.log(`➡️ ${username} (Socket ${socket.id}) joined room ${roomCode}`);
     socket.emit("joined-room-success", { roomCode });
+
+    socketToUsername[socket.id] = username;
 
     // Cancel deletion if it's scheduled
     if (deleteTimers[roomCode]) {
@@ -114,6 +118,11 @@ io.on("connection", socket => {
   socket.on("sendMessage", async ({ roomCode, message }) => {
     // Relay the message
     socket.to(roomCode).emit("receiveMessage", message);
+  });
+
+  socket.on("heartbeat-reply", (roomCode) => {
+    if(!activeUsers[roomCode]) activeUsers[roomCode] = new Set();
+    activeUsers[roomCode].add(socket.id);
   });
 
   // 5️⃣ Handle user disconnecting from room
@@ -139,8 +148,52 @@ io.on("connection", socket => {
   // 6️⃣ Clean-up logging
   socket.on("disconnect", () => {
     console.log("🔴 Socket disconnected:", socket.id);
+    delete socketToUsername[socket.id];
   });
 });
+
+//------------heartbeat ping logic-----------
+
+// After heartbeat, wait 2 seconds to collect replies and reset
+// Emit heartbeat every 10 sec
+setInterval(() => {
+  io.sockets.emit("heartbeat");
+}, 10000);
+
+// Cleanup and reset after 12 sec (2 sec after heartbeat)
+setInterval(() => {
+  for (const roomCode in activeUsers) {
+    const socketIds = [...activeUsers[roomCode]];
+    const usernames = socketIds.map(id => socketToUsername[id]).filter(Boolean);
+
+    io.to(roomCode).emit("active-users", {
+      roomCode,
+      activeUsernames: usernames,
+    });
+
+    if (socketIds.length === 0) {
+      console.log(`⚠️ Room ${roomCode} had no heartbeat replies.`);
+
+      if (!deleteTimers[roomCode]) {
+        deleteTimers[roomCode] = setTimeout(async () => {
+          await Room.deleteOne({ code: roomCode });
+          delete activeUsers[roomCode];
+          delete deleteTimers[roomCode];
+          console.log(`🗑️ Room ${roomCode} deleted after heartbeat inactivity.`);
+        }, 60 * 60 * 1000);
+      }
+    } else {
+      if (deleteTimers[roomCode]) {
+        clearTimeout(deleteTimers[roomCode]);
+        delete deleteTimers[roomCode];
+      }
+    }
+
+    // Reset for next round
+    activeUsers[roomCode] = new Set();
+  }
+}, 12000);
+
 
 // ─── START THE SERVER ──────────────────────────────────
 httpServer.listen(PORT, "0.0.0.0", () => {

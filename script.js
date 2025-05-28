@@ -51,32 +51,27 @@ function updateTime() {
 
 updateTime();
 setInterval(updateTime, 30000);
+const messageInput = document.getElementById('messageInput');
 
 // Scroll helper
-function scrollChatToBottom(pad = true) {
+function scrollChatToBottom() {
   const chatMessages = document.getElementById('chatMessages');
   const msgs = chatMessages.querySelectorAll('.message');
 
   if (msgs.length) {
-    // Smooth scroll last message into view aligned to bottom
-    msgs[msgs.length - 1].scrollIntoView({
-      behavior: 'smooth',
-      block: 'end',
-      inline: 'nearest'
-    });
-
-    if (pad) {
-      // Add extra scroll in case input is covered by keyboard
-      setTimeout(() => {
-        const maxScrollTop = chatMessages.scrollHeight - chatMessages.clientHeight;
-        chatMessages.scrollTop = Math.min(chatMessages.scrollTop + 100, maxScrollTop);
-      }, 200);
-    }
-  } else {
-    // If no messages, just scroll to bottom instantly
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    msgs[msgs.length - 1].scrollIntoView({ behavior: 'smooth', block: 'end' });
   }
 }
+
+['focus', 'click'].forEach(evt => {
+  messageInput.addEventListener(evt, () => {
+    setTimeout(scrollChatToBottom, 300);
+  });
+});
+
+window.addEventListener('resize', () => {
+  setTimeout(scrollChatToBottom, 300);
+});
 
 
 
@@ -106,7 +101,7 @@ document.getElementById('amigo').addEventListener('click', () => openChat());
 document.getElementById('back-btn').addEventListener('click', () => exitChat());
 
 // Input & keyboard UX
-const messageInput = document.getElementById('messageInput');
+
 const chatMessages = document.getElementById('chatMessages');
 
 // On first focus, any click, or viewport resize, re-scroll to bottom.
@@ -360,7 +355,11 @@ const socket = io("https://sanchat.onrender.com"); //deployed backend URL
 // Join a room
 function joinRoom(roomCode) {
   console.log("📤 Emitting join-room with:", roomCode);
-  socket.emit("join-room", roomCode);
+  socket.emit("join-room", {
+    roomCode: roomCode,
+    username: username
+});
+
   console.log("Joined room:", roomCode);
 }
 
@@ -418,6 +417,8 @@ socket.on("room-check-result", ({ exists, requiresSecret, roomName }) => {
     joinRoom(roomCode);
     searchInput.placeholder = "Search";
     searchicon.src = "assets/search.svg";
+    isInRoom = true;   // for heartbeat system
+    currentRoom = roomCode;
   }
 });
 
@@ -430,6 +431,8 @@ socket.on("secret-result", ({ success }) => {
     searchInput.placeholder = "Search";
     searchInput.value = "";
     searchicon.src = "assets/search.svg";
+    isInRoom = true;         // for heartbeat system
+    currentRoom = roomCode;
   } else {
     alert("Incorrect secret—try again.");
     searchInput.value = "";
@@ -445,6 +448,10 @@ socket.on("joined-room-success", ({ roomCode, error }) => {
   // Load and show old messages from localStorage
   const oldMessages = getMessagesFromLocal(roomCode);
   oldMessages.forEach(msg => displayMessage(msg)); // your existing function
+});
+
+socket.on("active-users", ({roomCode, activeUsernames}) => {
+  console.log(`🟢 Active users in ${roomCode}:`, activeUsernames);
 });
 
 //receive a message
@@ -529,6 +536,15 @@ messageInput.addEventListener("keydown", e => {
   if (e.key === "Enter") sendMessage();
 });
 
+//-------------heartbeat respond logic-------
 
+let isInRoom = false;
+let currentRoom = null;
+
+socket.on("heartbeat", () => {
+  if(isInRoom && currentRoom){
+    socket.emit("heartbeat-reply", currentRoom);
+  }
+});
 
 //-----------function to clear the chat messages------
